@@ -1,0 +1,46 @@
+---
+#- hosts: all
+##  gather_facts: yes
+#  tasks:
+  - name: Install EPEL
+    yum:
+      name: epel-release
+      state: installed
+    when: ansible_os_family == "RedHat"
+
+  - name: Install must-have packages
+    yum:
+      name: libselinux-python,bash-completion,unzip,python-psycopg2
+      state: installed
+    become: true
+    when: ansible_os_family == "RedHat"
+
+  - set_fact: bashrc_name="/etc/bashrc"
+    when: ansible_os_family == "RedHat"
+
+  - set_fact: bashrc_name="/etc/bash.bashrc"
+    when: ansible_os_family == "Debian"
+
+  - set_fact: bashrc_name="/etc/bash.bashrc"
+    when: ansible_distribution == "\"astralinuxce\""
+
+  - set_fact: bashrc_name="/etc/bashrc"
+    when: ansible_os_family == "ROSA"
+
+  - set_fact: bashrc_name="/etc/bash.bashrc"
+    when: ansible_os_family == "Astra Linux (Orel)"
+
+  - name: setup logging in bashrc
+    blockinfile: 
+     dest: "{{ bashrc_name }}"
+     create: no
+     insertafter: EOF
+     block: |
+        export HISTTIMEFORMAT='%d.%m.%Y %H:%M:%S'
+        export HISTSIZE=1000000
+        export HISTFILESIZE=1000000
+        export PROMPT_COMMAND='history -a'
+        shopt -s histappend
+
+
+  
